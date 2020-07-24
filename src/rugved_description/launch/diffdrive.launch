@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <param name="robot_description" command="cat '$(find rugved_description)/urdf/rugved_description.urdf'" />
+    
+    <arg name="x" default="-2"/>
+    <arg name="y" default="0"/>
+    <arg name="z" default="0.1"/>
+    
+    <node name="spawn_model" pkg="gazebo_ros" type="spawn_model" output="screen"
+          args="-urdf -param robot_description -model rugved_description -x $(arg x) -y $(arg y) -z $(arg z)" />
+          
+    <rosparam file="$(find rugved_description)/config/diffdrive.yaml" command="load" />
+    
+    <node name="controller_spawner" pkg="controller_manager" type="spawner"
+          respawn="false" output="screen" args="base_controller" />
+          
+          
+</launch>

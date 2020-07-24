@@ -1,0 +1,54 @@
+<launch>
+  
+  <arg name="model" default="$(find rugved_description)/urdf/rugved_description.urdf"/>
+
+  <include
+    file="$(find gazebo_ros)/launch/empty_world.launch" />
+  <node
+    name="tf_footprint_base"
+    pkg="tf"
+    type="static_transform_publisher"
+    args="0 0 0 0 0 0 base_link base_footprint 40" />
+ <!-- <param name="robot_description" command="cat '$(find rugved_description)/urdf/rugved_description.urdf'" />
+    
+    <arg name="x" default="0"/>
+    <arg name="y" default="0"/>
+    <arg name="z" default="0"/>
+    
+  <node name="spawn_model" pkg="gazebo_ros" type="spawn_model" output="screen"
+          args="-z 1.0 -unpause -urdf -param robot_description -model rugved_description -x $(arg x) -y $(arg y) -z $(arg z)" />
+  -->
+ <node
+    name="spawn_model"
+    pkg="gazebo_ros"
+    type="spawn_model"
+    args="-file $(find rugved_description)/urdf/rugved_description.urdf -z 1.0 -unpause -urdf -model robot_description"
+    output="screen" /> 
+  <rosparam command="load"
+            file="$(find rugved_description)/config/joints.yaml"
+            ns="/joint_state_controller" />
+  <rosparam file="$(find rugved_description)/config/diffdrive.yaml" command="load" ns="/diff_drive_controller/DiffDriveController" />
+  <node name="controller_spawner" 
+     pkg="controller_manager" 
+     type="spawner"
+     respawn="false" 
+     output="screen" 
+     args="base_controller
+          diff_drive_controller
+          joint1_position_controller 
+          joint2_position_controller
+          joint3_position_controller joint4_position_controller
+          joint_state_controller
+          --shutdown-timeout 3" />
+  <node
+    name="fake_joint_calibration"
+    pkg="rostopic"
+    type="rostopic"
+    args="pub /calibrated std_msgs/Bool true" />
+  <node 
+    name="rqt_robot_steering1" 
+    pkg="rqt_robot_steering" 
+    type="rqt_robot_steering">
+    <param name="default_topic" value="/diff_drive_controller/cmd_vel"/>
+  </node>
+</launch>
